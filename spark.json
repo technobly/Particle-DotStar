@@ -1,0 +1,8 @@
+{
+  "name": "dotstar",
+  "author": "Adafruit, Technobly",
+  "license": "GNU GPLv3",
+  "version": "0.0.1",
+  "description": "An Implementation of Adafruit's DotStar Library for the Spark Core",
+  "namespace": "Adafruit_DotStar"
+}
