@@ -28,12 +28,21 @@
 
 #include "application.h"
 
+// Color-order flag for LED pixels (optional extra parameter to constructor):
+// Bits 0,1 = R index (0-2), bits 2,3 = G index, bits 4,5 = B index
+#define DOTSTAR_RGB (0 | (1 << 2) | (2 << 4))
+#define DOTSTAR_RBG (0 | (2 << 2) | (1 << 4))
+#define DOTSTAR_GRB (1 | (0 << 2) | (2 << 4))
+#define DOTSTAR_GBR (2 | (0 << 2) | (1 << 4))
+#define DOTSTAR_BRG (1 | (2 << 2) | (0 << 4))
+#define DOTSTAR_BGR (2 | (1 << 2) | (0 << 4))
+
 class Adafruit_DotStar {
 
  public:
 
-    Adafruit_DotStar(uint16_t n);           // Constructor, hardware SPI
-    Adafruit_DotStar(uint16_t n, uint8_t d, uint8_t c); // " bitbang SPI
+    Adafruit_DotStar(uint16_t n, uint8_t o=DOTSTAR_GBR);
+    Adafruit_DotStar(uint16_t n, uint8_t d, uint8_t c, uint8_t o=DOTSTAR_GBR);
    ~Adafruit_DotStar(void);                 // Destructor
   void
     begin(void),                            // Prime pins/SPI for output
@@ -62,7 +71,10 @@ class Adafruit_DotStar {
     dataPin,                                // If soft SPI, data pin #
     clockPin,                               // If soft SPI, clock pin #
     brightness,                             // Global brightness setting
-   *pixels;                                 // LED RGB values (3 bytes ea.)
+   *pixels,                                 // LED RGB values (3 bytes ea.)
+    rOffset,                                // Index of red in 3-byte pixel
+    gOffset,                                // Index of green byte
+    bOffset;                                // Index of blue byte
   void
     hw_spi_init(void),                      // Start hardware SPI
     hw_spi_end(void),                       // Stop hardware SPI

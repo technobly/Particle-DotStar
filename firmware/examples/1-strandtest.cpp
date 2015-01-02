@@ -22,12 +22,29 @@
 
 #define NUMPIXELS 30 // Number of LEDs in strip
 
+//-------------------------------------------------------------------
+// NOTE: If you find that the colors you choose are not correct,
+// there is an optional 2nd argument (for HW SPI) and 
+// 4th arg. (for SW SPI) that you may specify to correct the colors.
+//-------------------------------------------------------------------
+// e.g. Adafruit_DotStar(NUMPIXELS, DOTSTAR_RGB);
+// e.g. Adafruit_DotStar(NUMPIXELS, DATAPIN, CLOCKPIN, DOTSTAR_RGB);
+//
+// DOTSTAR_RGB
+// DOTSTAR_RBG
+// DOTSTAR_GRB
+// DOTSTAR_GBR (default)
+// DOTSTAR_BRG
+// DOTSTAR_BGR 
+
+//-------------------------------------------------------------------
 // Here's how to control the LEDs from any two pins (Software SPI):
 //-------------------------------------------------------------------
 #define DATAPIN   D4
 #define CLOCKPIN  D5
 Adafruit_DotStar strip = Adafruit_DotStar(NUMPIXELS, DATAPIN, CLOCKPIN);
 
+//-------------------------------------------------------------------
 // Here's how to control the LEDs from any two pins (Hardware SPI):
 //-------------------------------------------------------------------
 // Hardware SPI is a little faster, but must be wired to specific pins
