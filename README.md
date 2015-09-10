@@ -8,8 +8,8 @@ DotStar LED's are APA102: [Datasheet](http://www.adafruit.com/datasheets/APA102.
 
 Components Required
 ---
-- A DotStar digital RGB LED (get at [adafruit.com](adafruit.com))
-- A Spark Shield Shield or breakout board to supply DotStars with 5V (see store at [spark.io](spark.io))
+- A DotStar digital RGB LED (get at [adafruit.com](http://www.adafruit.com/search?q=dotstar&b=1))
+- A Particle Shield Shield or breakout board to supply DotStars with 5V (see store at [particle.io](particle.io))
 
 Example Usage
 ---
