@@ -1,15 +1,15 @@
 SparkCore-DotStar
 ==================
 
-A library for manipulating DotStar RGB LEDs for the Spark Core.
+A library for manipulating DotStar RGB LEDs for the Spark Core, Particle Photon, P1 and Electron.
 Implementation based on Adafruit's DotStar Library.
 
 DotStar LED's are APA102: [Datasheet](http://www.adafruit.com/datasheets/APA102.pdf)
 
 Components Required
 ---
-- A DotStar digital RGB LED (get at [adafruit.com](adafruit.com))
-- A Spark Shield Shield or breakout board to supply DotStars with 5V (see store at [spark.io](spark.io))
+- A DotStar digital RGB LED (get at [adafruit.com](http://www.adafruit.com/search?q=dotstar&b=1))
+- A Particle Shield Shield or breakout board to supply DotStars with 5V (see store at [particle.io](particle.io))
 
 Example Usage
 ---
