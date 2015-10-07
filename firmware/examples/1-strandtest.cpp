@@ -18,7 +18,7 @@
 
 #include "application.h"
 
-#include "dotstar/dotstar.h"
+#include "dotstar.h"
 
 #define NUMPIXELS 30 // Number of LEDs in strip
 
