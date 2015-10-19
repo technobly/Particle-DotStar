@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------
-  Spark Core library to control Adafruit DotStar addressable RGB LEDs.
+  Particle library to control Adafruit DotStar addressable RGB LEDs.
 
-  Ported to Spark Core by Technobly.
+  Ported by Technobly for Particle Core, Photon, P1 and Electron.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
@@ -12,7 +12,7 @@
 // correct wiring and tests each pixel's ability to display red, green
 // and blue and to forward data down the line.  By limiting the number
 // and color of LEDs, it's reasonably safe to power a couple meters off
-// the Spark Core's VIN pin.  DON'T try that with other code!
+// the VIN pin.  DON'T try that with other code!
 
 /* ======================= includes ================================= */
 
@@ -24,7 +24,7 @@
 
 //-------------------------------------------------------------------
 // NOTE: If you find that the colors you choose are not correct,
-// there is an optional 2nd argument (for HW SPI) and 
+// there is an optional 2nd argument (for HW SPI) and
 // 4th arg. (for SW SPI) that you may specify to correct the colors.
 //-------------------------------------------------------------------
 // e.g. Adafruit_DotStar(NUMPIXELS, DOTSTAR_RGB);
@@ -35,7 +35,7 @@
 // DOTSTAR_GRB
 // DOTSTAR_GBR (default)
 // DOTSTAR_BRG
-// DOTSTAR_BGR 
+// DOTSTAR_BGR
 
 //-------------------------------------------------------------------
 // Here's how to control the LEDs from any two pins (Software SPI):
@@ -45,10 +45,10 @@
 Adafruit_DotStar strip = Adafruit_DotStar(NUMPIXELS, DATAPIN, CLOCKPIN);
 
 //-------------------------------------------------------------------
-// Here's how to control the LEDs from any two pins (Hardware SPI):
+// Here's how to control the LEDs from SPI pins (Hardware SPI):
 //-------------------------------------------------------------------
 // Hardware SPI is a little faster, but must be wired to specific pins
-// (Spark Core = pin A5 for data, A3 for clock)
+// (Core/Photon/P1/Electron = pin A5 for data, A3 for clock)
 //Adafruit_DotStar strip = Adafruit_DotStar(NUMPIXELS);
 
 void setup() {

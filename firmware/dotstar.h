@@ -1,8 +1,8 @@
 /*------------------------------------------------------------------------
-  Spark Core library to control Adafruit DotStar addressable RGB LEDs.
+  Particle library to control Adafruit DotStar addressable RGB LEDs.
 
-  Ported to Spark Core by Technobly.
-  
+  Ported by Technobly for Particle Core, Photon, P1 and Electron.
+
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
   ------------------------------------------------------------------------
