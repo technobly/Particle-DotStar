@@ -1,7 +1,8 @@
 Particle-DotStar
 ================
 
-A library for manipulating DotStar RGB LEDs for the Spark Core, Particle Photon, P1 and Electron.
+A library for manipulating DotStar RGB LEDs for the Spark Core, Particle Photon, P1, Electron, and RedBear Duo.
+
 Implementation based on Adafruit's DotStar Library.
 
 DotStar LED's are APA102: [Datasheet](http://www.adafruit.com/datasheets/APA102.pdf)
