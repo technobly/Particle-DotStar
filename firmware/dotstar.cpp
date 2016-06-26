@@ -1,7 +1,8 @@
 /*------------------------------------------------------------------------
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
-  Ported by Technobly for Particle Core, Photon, P1 and Electron.
+  Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
+  and RedBear Duo.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
@@ -38,12 +39,12 @@
 #if PLATFORM_ID == 0 // Core
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
-#elif PLATFORM_ID == 6 || PLATFORM_ID == 8 || PLATFORM_ID == 10 // Photon (6), P1 (8) or Electron (10)
+#elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1 or Electron ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron or RedBear Duo ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
@@ -128,7 +129,7 @@ void Adafruit_DotStar::hw_spi_init(void) { // Initialize hardware SPI
   SPI.setDataMode(SPI_MODE0);
 }
 
-inline void Adafruit_DotStar::hw_spi_end(void) { // Stop hardware SPI
+void Adafruit_DotStar::hw_spi_end(void) { // Stop hardware SPI
   SPI.end();
 }
 
@@ -218,7 +219,7 @@ void Adafruit_DotStar::show(void) {
   //__enable_irq();
 }
 
-inline void Adafruit_DotStar::clear() { // Write 0s (off) to full pixel buffer
+void Adafruit_DotStar::clear() { // Write 0s (off) to full pixel buffer
   memset(pixels, 0, numLEDs * 3);
 }
 
@@ -268,7 +269,7 @@ uint16_t Adafruit_DotStar::numPixels(void) { // Ret. strip length
 // in this library is 'non destructive' -- it's applied as color data is
 // being issued to the strip, not during setPixel(), and also means that
 // getPixelColor() returns the exact value originally stored.
-inline void Adafruit_DotStar::setBrightness(uint8_t b) {
+void Adafruit_DotStar::setBrightness(uint8_t b) {
   // Stored brightness value is different than what's passed.  This
   // optimizes the actual scaling math later, allowing a fast 8x8-bit
   // multiply and taking the MSB.  'brightness' is a uint8_t, adding 1
@@ -278,13 +279,13 @@ inline void Adafruit_DotStar::setBrightness(uint8_t b) {
   brightness = b + 1;
 }
 
-inline uint8_t Adafruit_DotStar::getBrightness(void) const {
+uint8_t Adafruit_DotStar::getBrightness(void) const {
   return brightness - 1; // Reverse above operation
 }
 
 // Return pointer to the library's pixel data buffer.  Use carefully,
 // much opportunity for mayhem.  It's mostly for code that needs fast
 // transfers, e.g. SD card to LEDs.  Color data is in BGR order.
-inline uint8_t *Adafruit_DotStar::getPixels(void) const {
+uint8_t *Adafruit_DotStar::getPixels(void) const {
   return pixels;
 }

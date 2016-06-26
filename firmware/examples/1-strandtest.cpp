@@ -1,18 +1,20 @@
 /*------------------------------------------------------------------------
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
-  Ported by Technobly for Particle Core, Photon, P1 and Electron.
+  Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
+  and RedBear Duo.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
   ------------------------------------------------------------------------
 
-// Simple strand test for Adafruit Dot Star RGB LED strip.
-// This is a basic diagnostic tool, NOT a graphics demo...helps confirm
-// correct wiring and tests each pixel's ability to display red, green
-// and blue and to forward data down the line.  By limiting the number
-// and color of LEDs, it's reasonably safe to power a couple meters off
-// the VIN pin.  DON'T try that with other code!
+ * Simple strand test for Adafruit Dot Star RGB LED strip.
+ * This is a basic diagnostic tool, NOT a graphics demo...helps confirm
+ * correct wiring and tests each pixel's ability to display red, green
+ * and blue and to forward data down the line.  By limiting the number
+ * and color of LEDs, it's reasonably safe to power a couple meters off
+ * the VIN pin.  DON'T try that with other code!
+ */
 
 /* ======================= includes ================================= */
 
