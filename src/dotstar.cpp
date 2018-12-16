@@ -44,8 +44,12 @@
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
 #elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // 3rd Gen Mesh Products Argon(12), Boron(13), or Xenon(14)
-  #define pinLO(_pin) pinResetFast(_pin)
-  #define pinHI(_pin) pinSetFast(_pin)
+  #include "nrf.h"
+  #include "nrf_gpio.h"
+  #include "pinmap_impl.h"
+  NRF5x_Pin_Info* PIN_MAP2 = HAL_Pin_Map();
+  #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
+  #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
 #else
   #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, RedBear Duo, Argon, Boron, or Xenon ***"
 #endif
