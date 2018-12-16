@@ -2,7 +2,7 @@
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
   Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
-  and RedBear Duo.
+  RedBear Duo, Argon, Boron, or Xenon.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
