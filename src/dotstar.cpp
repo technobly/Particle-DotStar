@@ -2,7 +2,7 @@
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
   Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
-  and RedBear Duo.
+  RedBear Duo, Argon, Boron, or Xenon.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
@@ -43,8 +43,15 @@
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
+#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // 3rd Gen Mesh Products Argon(12), Boron(13), or Xenon(14)
+  #include "nrf.h"
+  #include "nrf_gpio.h"
+  #include "pinmap_impl.h"
+  NRF5x_Pin_Info* PIN_MAP2 = HAL_Pin_Map();
+  #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
+  #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron or RedBear Duo ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, RedBear Duo, Argon, Boron, or Xenon ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))

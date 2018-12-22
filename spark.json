@@ -1,8 +1,0 @@
-{
-  "name": "dotstar",
-  "author": "Adafruit, Technobly",
-  "license": "GNU GPLv3",
-  "version": "0.0.4",
-  "description": "An Implementation of Adafruit's DotStar Library for Particle devices",
-  "namespace": "Adafruit_DotStar"
-}
