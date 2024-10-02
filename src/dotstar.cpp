@@ -2,7 +2,7 @@
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
   Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
-  RedBear Duo, Argon, Boron, or Xenon.
+  RedBear Duo, Argon, Boron, Xenon, or Photon2/P2.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
@@ -35,31 +35,56 @@
 
 #include "dotstar.h"
 
-// fast pin access
-#if PLATFORM_ID == 0 // Core
+#if PLATFORM_ID == 0 // Core (0)
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
 #elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
+#if SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
+#else
+  STM32_Pin_Info* PIN_MAP2 = hal_pin_map(); // Pointer required for highest access speed
+#endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
-#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // 3rd Gen Mesh Products Argon(12), Boron(13), or Xenon(14)
+#elif HAL_PLATFORM_NRF52840 // Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker
   #include "nrf.h"
   #include "nrf_gpio.h"
   #include "pinmap_impl.h"
+#if SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   NRF5x_Pin_Info* PIN_MAP2 = HAL_Pin_Map();
+#else
+  NRF5x_Pin_Info* PIN_MAP2 = hal_pin_map();
+#endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
   #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
+#elif (PLATFORM_ID == 32) // HAL_PLATFORM_RTL872X
+  // nothing extra needed for P2
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, RedBear Duo, Argon, Boron, or Xenon ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon, RedBear Duo, B SoM, B5 SoM, E SoM X, Tracker or P2 ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
+#if (PLATFORM_ID == 32)
+void Adafruit_DotStar::spi_out(int n) {
+    spi_->transfer(n);
+}
+#else
 #define spi_out(n) (void)SPI.transfer(n)
+#endif
 
 #define USE_HW_SPI 255 // Assign this to dataPin to indicate 'hard' SPI
 
+#if (PLATFORM_ID == 32)
+Adafruit_DotStar::Adafruit_DotStar(uint16_t n, SPIClass& spi, uint8_t o) :
+ numLEDs(n), dataPin(USE_HW_SPI), brightness(0), pixels(NULL),
+ rOffset(o & 3), gOffset((o >> 2) & 3), bOffset((o >> 4) & 3)
+{
+  updateLength(n);
+  spi_ = &spi;
+}
+
+#else
 // Constructor for hardware SPI -- must connect to MOSI, SCK pins
 Adafruit_DotStar::Adafruit_DotStar(uint16_t n, uint8_t o) :
  numLEDs(n), dataPin(USE_HW_SPI), brightness(0), pixels(NULL),
@@ -76,16 +101,17 @@ Adafruit_DotStar::Adafruit_DotStar(uint16_t n, uint8_t data, uint8_t clock,
 {
   updateLength(n);
 }
+#endif // #if (PLATFORM_ID == 32)
 
 Adafruit_DotStar::~Adafruit_DotStar(void) { // Destructor
-  if(pixels)                free(pixels);
-  if(dataPin == USE_HW_SPI) hw_spi_end();
-  else                      sw_spi_end();
+  if (pixels)                free(pixels);
+  if (dataPin == USE_HW_SPI) hw_spi_end();
+  else                       sw_spi_end();
 }
 
 void Adafruit_DotStar::begin(void) { // Initialize SPI
-  if(dataPin == USE_HW_SPI) hw_spi_init();
-  else                      sw_spi_init();
+  if (dataPin == USE_HW_SPI) hw_spi_init();
+  else                       sw_spi_init();
 }
 
 // Pins may be reassigned post-begin(), so a sketch can store hardware
@@ -96,17 +122,21 @@ void Adafruit_DotStar::begin(void) { // Initialize SPI
 
 // Change to hardware SPI -- must connect to MOSI, SCK pins
 void Adafruit_DotStar::updatePins(void) {
+#if PLATFORM_ID != 32
   sw_spi_end();
   dataPin = USE_HW_SPI;
   hw_spi_init();
+#endif
 }
 
 // Change to 'soft' (bitbang) SPI -- any two pins can be used
 void Adafruit_DotStar::updatePins(uint8_t data, uint8_t clock) {
+#if PLATFORM_ID != 32
   hw_spi_end();
   dataPin  = data;
   clockPin = clock;
   sw_spi_init();
+#endif
 }
 
 // Length can be changed post-constructor for similar reasons (sketch
@@ -114,9 +144,9 @@ void Adafruit_DotStar::updatePins(uint8_t data, uint8_t clock) {
 // all that reallocation is likely to fragment and eventually fail.
 // Instead, set length once to longest strip.
 void Adafruit_DotStar::updateLength(uint16_t n) {
-  if(pixels) free(pixels);
+  if (pixels) free(pixels);
   uint16_t bytes = n * 3;
-  if((pixels = (uint8_t *)malloc(bytes))) {
+  if ((pixels = (uint8_t *)malloc(bytes))) {
     numLEDs = n;
     clear();
   } else {
@@ -127,6 +157,7 @@ void Adafruit_DotStar::updateLength(uint16_t n) {
 // SPI STUFF ---------------------------------------------------------------
 
 void Adafruit_DotStar::hw_spi_init(void) { // Initialize hardware SPI
+#if (PLATFORM_ID != 32)
   SPI.begin();
   // 72MHz / 4 = 18MHz (sweet spot)
   // Any slower than 18MHz and you are barely faster than Software SPI.
@@ -134,31 +165,47 @@ void Adafruit_DotStar::hw_spi_init(void) { // Initialize hardware SPI
   SPI.setClockDivider(SPI_CLOCK_DIV4);
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
+#else
+  spi_->begin(PIN_INVALID);
+  spi_->setClockSpeed(12500000);
+  spi_->setBitOrder(MSBFIRST);
+  spi_->setDataMode(SPI_MODE0);
+#endif
 }
 
 void Adafruit_DotStar::hw_spi_end(void) { // Stop hardware SPI
+#if (PLATFORM_ID != 32)
   SPI.end();
+#else
+  spi_->end();
+#endif
 }
 
 void Adafruit_DotStar::sw_spi_init(void) { // Init 'soft' (bitbang) SPI
+#if (PLATFORM_ID != 32)
   pinMode(dataPin , OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinSet(dataPin , LOW);
   pinSet(clockPin, LOW);
+#endif
 }
 
 void Adafruit_DotStar::sw_spi_end() { // Stop 'soft' SPI
+#if (PLATFORM_ID != 32)
   pinMode(dataPin , INPUT);
   pinMode(clockPin, INPUT);
+#endif
 }
 
 void Adafruit_DotStar::sw_spi_out(uint8_t n) { // Bitbang SPI write
-  for(uint8_t i=8; i--; n <<= 1) {
-    if(n & 0x80) pinSet(dataPin, HIGH);
-    else         pinSet(dataPin, LOW);
+#if (PLATFORM_ID != 32)
+  for (uint8_t i=8; i--; n <<= 1) {
+    if (n & 0x80) pinSet(dataPin, HIGH);
+    else          pinSet(dataPin, LOW);
     pinSet(clockPin, HIGH);
     pinSet(clockPin, LOW);
   }
+#endif
 }
 
 /* ISSUE DATA TO LED STRIP -------------------------------------------------
@@ -176,7 +223,7 @@ void Adafruit_DotStar::sw_spi_out(uint8_t n) { // Bitbang SPI write
 
 void Adafruit_DotStar::show(void) {
 
-  if(!pixels) return;
+  if (!pixels) return;
 
   uint8_t *ptr = pixels, i;            // -> LED data
   uint16_t n   = numLEDs;              // Counter
@@ -184,43 +231,44 @@ void Adafruit_DotStar::show(void) {
 
   //__disable_irq(); // If 100% focus on SPI clocking required
 
-  if(dataPin == USE_HW_SPI) {
-
-    for(i=0; i<4; i++) spi_out(0x00);    // 4 byte start-frame marker
-    if(brightness) {                     // Scale pixel brightness on output
+  if (dataPin == USE_HW_SPI) {
+    for (i=0; i<4; i++) spi_out(0x00);    // 4 byte start-frame marker
+    if (brightness) {                     // Scale pixel brightness on output
       do {                               // For each pixel...
         spi_out(0xFF);                   //  Pixel start
-        for(i=0; i<3; i++) spi_out((*ptr++ * b16) >> 8); // Scale, write RGB
-      } while(--n);
+        for (i=0; i<3; i++) spi_out((*ptr++ * b16) >> 8); // Scale, write RGB
+      } while (--n);
     } else {                             // Full brightness (no scaling)
       do {                               // For each pixel...
         spi_out(0xFF);                   //  Pixel start
-        for(i=0; i<3; i++) spi_out(*ptr++); // Write R,G,B
-      } while(--n);
+        for (i=0; i<3; i++) spi_out(*ptr++); // Write R,G,B
+      } while (--n);
     }
 
-    // Four end-frame bytes are seemingly indistinguishable from a white
-    // pixel, and empirical testing suggests it can be left out...but it's
-    // always a good idea to follow the datasheet, in case future hardware
-    // revisions are more strict (e.g. might mandate use of end-frame
-    // before start-frame marker).  i.e. let's not remove this.
-    for(i=0; i<4; i++) spi_out(0xFF);
+    // XXX: Causes last pixel to be white if trying to display on a shorter seqment of a strip
+    // // Four end-frame bytes are seemingly indistinguishable from a white
+    // // pixel, and empirical testing suggests it can be left out...but it's
+    // // always a good idea to follow the datasheet, in case future hardware
+    // // revisions are more strict (e.g. might mandate use of end-frame
+    // // before start-frame marker).  i.e. let's not remove this.
+    // for (i=0; i<4; i++) spi_out(0xFF);
 
   } else {                               // Soft (bitbang) SPI
 
-    for(i=0; i<4; i++) sw_spi_out(0);    // Start-frame marker
-    if(brightness) {                     // Scale pixel brightness on output
+    for (i=0; i<4; i++) sw_spi_out(0);    // Start-frame marker
+    if (brightness) {                     // Scale pixel brightness on output
       do {                               // For each pixel...
         sw_spi_out(0xFF);                //  Pixel start
-        for(i=0; i<3; i++) sw_spi_out((*ptr++ * b16) >> 8); // Scale, write
-      } while(--n);
+        for (i=0; i<3; i++) sw_spi_out((*ptr++ * b16) >> 8); // Scale, write
+      } while (--n);
     } else {                             // Full brightness (no scaling)
       do {                               // For each pixel...
         sw_spi_out(0xFF);                //  Pixel start
-        for(i=0; i<3; i++) sw_spi_out(*ptr++); // R,G,B
-      } while(--n);
+        for (i=0; i<3; i++) sw_spi_out(*ptr++); // R,G,B
+      } while (--n);
     }
-    for(i=0; i<4; i++) sw_spi_out(0xFF); // End-frame marker (see note above)
+    // XXX: Causes last pixel to be white if trying to display on a shorter seqment of a strip
+    // for (i=0; i<4; i++) sw_spi_out(0xFF); // End-frame marker (see note above)
   }
 
   //__enable_irq();
@@ -233,7 +281,7 @@ void Adafruit_DotStar::clear() { // Write 0s (off) to full pixel buffer
 // Set pixel color, separate R,G,B values (0-255 ea.)
 void Adafruit_DotStar::setPixelColor(
  uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
-  if(n < numLEDs) {
+  if (n < numLEDs) {
     uint8_t *p = &pixels[n * 3];
     p[rOffset] = r;
     p[gOffset] = g;
@@ -243,7 +291,7 @@ void Adafruit_DotStar::setPixelColor(
 
 // Set pixel color, 'packed' RGB value (0x000000 - 0xFFFFFF)
 void Adafruit_DotStar::setPixelColor(uint16_t n, uint32_t c) {
-  if(n < numLEDs) {
+  if (n < numLEDs) {
     uint8_t *p = &pixels[n * 3];
     p[rOffset] = (uint8_t)(c >> 16);
     p[gOffset] = (uint8_t)(c >>  8);
@@ -258,7 +306,7 @@ uint32_t Adafruit_DotStar::Color(uint8_t r, uint8_t g, uint8_t b) {
 
 // Read color from previously-set pixel, returns packed RGB value.
 uint32_t Adafruit_DotStar::getPixelColor(uint16_t n) const {
-  if(n >= numLEDs) return 0;
+  if (n >= numLEDs) return 0;
   uint8_t *p = &pixels[n * 3];
   return ((uint32_t)p[rOffset] << 16) |
          ((uint32_t)p[gOffset] <<  8) |

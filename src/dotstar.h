@@ -2,7 +2,7 @@
   Particle library to control Adafruit DotStar addressable RGB LEDs.
 
   Ported by Technobly for Spark Core, Particle Photon, P1, Electron,
-  RedBear Duo, Argon, Boron, or Xenon.
+  RedBear Duo, Argon, Boron, Xenon, or Photon2/P2.
 
   ------------------------------------------------------------------------
   -- original header follows ---------------------------------------------
@@ -41,9 +41,13 @@
 class Adafruit_DotStar {
 
  public:
-
-    Adafruit_DotStar(uint16_t n, uint8_t o=DOTSTAR_GBR);
-    Adafruit_DotStar(uint16_t n, uint8_t d, uint8_t c, uint8_t o=DOTSTAR_GBR);
+  // Constructor: number of LEDs, pin number, LED type
+#if (PLATFORM_ID == 32)
+    Adafruit_DotStar(uint16_t n, SPIClass& spi, uint8_t o=DOTSTAR_BGR);
+#else
+    Adafruit_DotStar(uint16_t n, uint8_t o=DOTSTAR_BGR);
+    Adafruit_DotStar(uint16_t n, uint8_t d, uint8_t c, uint8_t o=DOTSTAR_BGR);
+#endif // #if (PLATFORM_ID == 32)
    ~Adafruit_DotStar(void);                 // Destructor
   void
     begin(void),                            // Prime pins/SPI for output
@@ -82,7 +86,11 @@ class Adafruit_DotStar {
     sw_spi_init(void),                      // Start bitbang SPI
     sw_spi_out(uint8_t n),                  // Bitbang SPI write
     sw_spi_end(void);                       // Stop bitbang SPI
-
+#if (PLATFORM_ID == 32)
+    void spi_out(int n);                    // SPI out
+  SPIClass*
+    spi_;
+#endif
 };
 
 #endif // _ADAFRUIT_DOT_STAR_H_
